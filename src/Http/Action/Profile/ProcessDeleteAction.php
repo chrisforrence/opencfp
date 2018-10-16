@@ -30,12 +30,19 @@ final class ProcessDeleteAction
      */
     private $urlGenerator;
 
+    /**
+     * @var Services\ProfileImageProcessor
+     */
+    private $profileImageProcessor;
+
     public function __construct(
         Services\Authentication $authentication,
-        Routing\Generator\UrlGeneratorInterface $urlGenerator
+        Routing\Generator\UrlGeneratorInterface $urlGenerator,
+        Services\ProfileImageProcessor $profileImageProcessor
     ) {
-        $this->authentication = $authentication;
-        $this->urlGenerator   = $urlGenerator;
+        $this->authentication        = $authentication;
+        $this->urlGenerator          = $urlGenerator;
+        $this->profileImageProcessor = $profileImageProcessor;
     }
 
     public function __invoke(HttpFoundation\Request $request): HttpFoundation\Response
@@ -49,6 +56,9 @@ final class ProcessDeleteAction
         }
 
         try {
+            if ($user->photo_path) {
+                $this->profileImageProcessor->remove($user->photo_path);
+            }
             $user->delete();
             $this->authentication->logout();
             $url = $this->urlGenerator->generate('homepage');

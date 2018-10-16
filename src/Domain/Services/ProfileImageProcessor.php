@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace OpenCFP\Domain\Services;
 
 use Intervention\Image\ImageManagerStatic as Image;
+use League\Flysystem\FileNotFoundException;
 use League\Flysystem\FilesystemInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -47,6 +48,7 @@ class ProfileImageProcessor
     /**
      * @param string                $publishDir
      * @param RandomStringGenerator $generator
+     * @param FilesystemInterface   $filesystem
      * @param int                   $size
      */
     public function __construct($publishDir, RandomStringGenerator $generator, FilesystemInterface $filesystem, $size = 250)
@@ -101,5 +103,16 @@ class ProfileImageProcessor
         } finally {
             \unlink($tempFilepath);
         }
+    }
+
+    public function remove($filepath): bool
+    {
+        try {
+            $this->filesystem->delete($filepath);
+        } catch (FileNotFoundException $e) {
+            return false;
+        }
+
+        return true;
     }
 }

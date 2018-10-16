@@ -92,15 +92,22 @@ final class ProcessAction
         $isValid = $form->validateAll('update');
 
         if ($isValid) {
+            $user = Model\User::find($userId);
+
             $sanitizedData = $this->transformSanitizedData($form->getCleanData());
 
             if (isset($formData['speaker_photo'])) {
                 $sanitizedData['photo_path'] = $this->profileImageProcessor->process($formData['speaker_photo']);
+
+                // Remove the user's old photo
+                if ($user->photo_path) {
+                    $this->profileImageProcessor->remove($user->photo_path);
+                }
             }
 
             unset($sanitizedData['speaker_photo']);
 
-            Model\User::find($userId)->update($sanitizedData);
+            $user->update($sanitizedData);
 
             $url = $this->urlGenerator->generate('dashboard');
 
